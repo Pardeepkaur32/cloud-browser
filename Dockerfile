@@ -28,7 +28,7 @@ RUN groupadd -g 1001 usergroup \
 
 # Set up X11VNC password
 RUN mkdir -p /tmp/.vnc && \
-x11vnc -storepasswd 1234 /tmp/.vnc/passwd && \
+x11vnc -storepasswd 1234567 /tmp/.vnc/passwd && \
 chown -R user:usergroup /tmp/.vnc
 
 # Ensure proper permissions for chrome-data
