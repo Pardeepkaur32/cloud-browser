@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Remove existing containers with the same names
+for i in $(seq 1 3); do
+    container_name="vnc-browser-user$i"
+    echo "Stopping container: $container_name"
+    docker stop $container_name 2>/dev/null
+    echo "Removing container: $container_name"
+    docker rm $container_name 2>/dev/null
+done
+
 # Define base directory for persistent data storage
 base_data_dir="/home/ubuntu/cloud-browser/vol"  # Replace this with the actual path
 
@@ -13,5 +22,7 @@ for i in $(seq 1 3); do  # Using seq command instead of {1..3} for better compat
     mkdir -p $user_data_dir
 
     echo "Starting container $container_name on port $port with persistent volume $user_data_dir"
-    docker run -d -p $port:5900 -v $user_data_dir:/tmp/chrome-data --name $container_name vnc-browser-image
+
+    # Run container with memory and CPU limits
+    docker run -d -p $port:5900 -v $user_data_dir:/tmp/chrome-data --memory="1g" --cpus="1.5" --name $container_name vnc-browser-image
 done
