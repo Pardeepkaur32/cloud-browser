@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout from Git') {
+            steps{
+                git branch: 'main', url: 'https://github.com/Pardeepkaur32/cloud-browser.git'
+            }
+        }
+        stage('Terraform version') {
+            steps {
+                sh 'terraform --version'
+            }
+        }
+        stage('Terraform init') {
+            steps {
+                dir('Eks-terraform') { // Change to Eks-terraform directory
+                    sh 'terraform init'
+                }
+            }
+        }
+        stage('Terraform validate') {
+            steps {
+                dir('Eks-terraform') { // Ensure this runs in the correct directory
+                    sh 'terraform validate'
+                }
+            }
+        }
+        stage('Terraform plan') {
+            steps {
+                dir('Eks-terraform') { // Ensure this runs in the correct directory
+                    sh 'terraform plan'
+                }
+            }
+        }
+    }
+}
