@@ -1,8 +1,11 @@
 pipeline {
     agent any
+    parameters {
+        choice(name: 'action', choices: ['apply', 'destroy'], description: 'Choose the Terraform action to perform')
+    }
     stages {
         stage('Checkout from Git') {
-            steps{
+            steps {
                 git branch: 'main', url: 'https://github.com/Pardeepkaur32/cloud-browser.git'
             }
         }
@@ -13,31 +16,31 @@ pipeline {
         }
         stage('Terraform init') {
             steps {
-                dir('Eks-terraform') { // Change to Eks-terraform directory
+                dir('Eks-terraform') {  // Change to Eks-terraform directory
                     sh 'terraform init'
                 }
             }
         }
         stage('Terraform validate') {
             steps {
-                dir('Eks-terraform') { // Ensure this runs in the correct directory
+                dir('Eks-terraform') {  // Ensure this runs in the correct directory
                     sh 'terraform validate'
                 }
             }
         }
         stage('Terraform plan') {
             steps {
-                dir('Eks-terraform') { // Ensure this runs in the correct directory
+                dir('Eks-terraform') {  // Ensure this runs in the correct directory
                     sh 'terraform plan'
                 }
             }
         }
-        stage('Terraform apply/destroy'){
-             steps{
-                 dir('EKS_TERRAFORM') {
-                      sh 'terraform ${action} --auto-approve'
-                   }
-             }
+        stage('Terraform apply/destroy') {
+            steps {
+                dir('Eks-terraform') {  // Use the parameterized choice
+                    sh "terraform ${params.action} --auto-approve"  // Use the selected 'action'
+                }
+            }
         }
     }
 }
