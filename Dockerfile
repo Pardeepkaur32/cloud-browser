@@ -1,55 +1,61 @@
 # Use an official lightweight base image
-FROM amd64/ubuntu
+FROM ubuntu:20.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ENV_CHROME=/usr/bin/google-chrome
 
-RUN set -xe \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl socat \
-    && apt-get install -y --no-install-recommends xvfb x11vnc fluxbox xterm \
-    && apt-get install -y --no-install-recommends sudo \
-    && apt-get install -y --no-install-recommends supervisor \
-    && apt-get install -y gnupg2 \
-    && rm -rf /var/lib/apt/lists/*
+# Install necessary packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    gnupg2 \
+    socat \
+    sudo \
+    xvfb \
+    x11vnc \
+    fluxbox \
+    xterm \
+    supervisor && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN set -xe \
-    && curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install -f -y google-chrome-stable \
-    && rm -rf /var/lib/apt/lists/*
+# Add Chrome's repository and install Google Chrome
+RUN curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && apt-get install -y google-chrome-stable && \
+    rm -rf /var/lib/apt/lists/*
 
 # Add a normal user with passwordless sudo
-RUN groupadd -g 1001 usergroup \
-&& useradd -u 1001 -g usergroup -G sudo --shell /bin/bash --no-create-home --home-dir /tmp user \
-&& echo 'ALL ALL = (ALL:ALL) NOPASSWD: ALL' >> /etc/sudoers
+RUN groupadd -g 1001 usergroup && \
+    useradd -u 1001 -g usergroup -G sudo --shell /bin/bash --no-create-home --home-dir /tmp user && \
+    echo 'ALL ALL = (ALL:ALL) NOPASSWD: ALL' >> /etc/sudoers
 
-# Set up X11VNC password
+# Set up X11VNC password (you can change '1234567' to your preferred password)
 RUN mkdir -p /tmp/.vnc && \
-x11vnc -storepasswd 1234567 /tmp/.vnc/passwd && \
-chown -R user:usergroup /tmp/.vnc
+    x11vnc -storepasswd 1234567 /tmp/.vnc/passwd && \
+    chown -R user:usergroup /tmp/.vnc
 
-# Ensure proper permissions for chrome-data
+# Set up Chrome data directory with proper permissions
 RUN mkdir -p /tmp/chrome-data && \
-chown -R user:usergroup /tmp/chrome-data
+    chown -R user:usergroup /tmp/chrome-data  # This ensures correct ownership for every container
 
-# Ensure necessary permissions for logs and supervisor configuration
+# Set up supervisor directories and permissions
 RUN mkdir -p /var/log/supervisor && \
     chown -R user:usergroup /var/log/supervisor && \
     chown -R user:usergroup /etc/supervisor
 
-# Copy supervisord configuration file
+# Copy supervisor configuration file
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Switch to the normal user
 USER user
 WORKDIR /tmp
+
+# Expose the volume for Chrome data
 VOLUME /tmp/chrome-data
 
 # Expose VNC port
 EXPOSE 5900
 
-# Set the entry point
+# Start supervisor to manage services
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
