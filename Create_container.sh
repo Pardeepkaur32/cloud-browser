@@ -1,18 +1,17 @@
 #!/bin/bash
 
-# Number of users
-num_users=5  # Change this number based on how many containers you want to create
+# Define base directory for persistent data storage
+base_data_dir="/home/ubuntu/cloud-browser/vol"  # Replace this with the actual path
 
-for i in $(seq 1 $num_users); do
-    port=$((5900 + i))  # Assign ports 5901, 5902, etc.
-    container_name="chrome-vnc-container-user$i"
-    volume_path="/home/ubuntu/user$i-data"  # Path on the host for persistent data
+# Loop to create and run containers for each user
+for i in $(seq 1 3); do  # Using seq command instead of {1..3} for better compatibility
+    port=$((5901 + i))  # Assign port numbers 5901, 5902, etc.
+    container_name="vnc-browser-user$i"
+    user_data_dir="$base_data_dir/user$i-data"  # Create a unique volume path for each user
 
     # Create the directory if it doesn't exist
-    mkdir -p $volume_path
+    mkdir -p $user_data_dir
 
-    echo "Creating container $container_name on port $port with persistent volume $volume_path"
-    
-    # Run the Docker container with a persistent volume for each user
-    docker run -d -p $port:5900 -v $volume_path:/tmp/chrome-data --name $container_name chrome-vnc
+    echo "Starting container $container_name on port $port with persistent volume $user_data_dir"
+    docker run -d -p $port:5900 -v $user_data_dir:/tmp/chrome-data --name $container_name vnc-browser-image
 done
