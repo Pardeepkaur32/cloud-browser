@@ -26,3 +26,12 @@ for i in $(seq 1 3); do  # Using seq command instead of {1..3} for better compat
     # Run container with memory and CPU limits
     docker run -d -p $port:5900 -v $user_data_dir:/tmp/chrome-data --memory="1g" --cpus="1.5" --name $container_name vnc-browser-image
 done
+
+# List contents of each user's data directory
+echo "Listing contents of each user's data directory:"
+for i in $(seq 1 3); do
+    user_data_dir="$base_data_dir/user$i-data"
+    echo "Contents of $user_data_dir:"
+    ls -l $user_data_dir
+    echo ""
+done
