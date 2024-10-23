@@ -3,7 +3,10 @@ FROM ubuntu:20.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
-ENV ENV_CHROME=/usr/bin/google-chrome
+ENV DISPLAY=:10
+ENV VNC_PORT=5900
+ENV USER_DATA_DIR=/tmp/chrome-data
+ENV DEBUG_PORT=19222
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -50,17 +53,13 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Switch to the normal user
 USER user
 
-# Set dynamic environment variables for each container instance
-ENV DISPLAY=:10
-ENV USER_DATA_DIR=/tmp/chrome-data
-
 # Set the working directory to /tmp
 WORKDIR /tmp
 
 # Expose the volume for Chrome data
 VOLUME /tmp/chrome-data
 
-# Expose dynamic VNC port
+# Expose VNC port (this will be dynamically assigned)
 EXPOSE 5900
 
 # Start supervisor to manage services
