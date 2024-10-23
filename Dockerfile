@@ -50,13 +50,17 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Switch to the normal user
 USER user
 
+# Set dynamic environment variables for each container instance
+ENV DISPLAY=:10
+ENV USER_DATA_DIR=/tmp/chrome-data
+
 # Set the working directory to /tmp
 WORKDIR /tmp
 
 # Expose the volume for Chrome data
 VOLUME /tmp/chrome-data
 
-# Expose VNC port
+# Expose dynamic VNC port
 EXPOSE 5900
 
 # Start supervisor to manage services
