@@ -64,3 +64,7 @@ EXPOSE 5900
 
 # Start supervisor to manage services
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+
+HEALTHCHECK --interval=30s --timeout=30s --retries=3 \
+  CMD curl -f http://localhost:5900 || exit 1
+
