@@ -37,7 +37,7 @@ RUN mkdir -p /tmp/.vnc && \
 
 # Set up Chrome data directory with proper permissions
 RUN mkdir -p /tmp/chrome-data && \
-    chown -R user:usergroup /tmp/chrome-data  # This ensures correct ownership for every container
+    chown -R user:usergroup /tmp/chrome-data
 
 # Set up supervisor directories and permissions
 RUN mkdir -p /var/log/supervisor && \
@@ -49,6 +49,8 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Switch to the normal user
 USER user
+
+# Set the working directory to /tmp
 WORKDIR /tmp
 
 # Expose the volume for Chrome data
