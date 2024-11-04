@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+
+    environment {
+        KUBECONFIG = credentials('kubeconfig')  // Use your Jenkins credential ID for kubeconfig
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Pardeepkaur32/cloud-browser.git'  // Replace 'main' with your branch name
+            }
+        }
+
+        stage("Docker Build & Push") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {   
+                        // Build, tag, and push the Docker image
+                        sh "docker build -t chrome-vnc ."
+                        sh "docker tag chrome-vnc pardeepkaur/chrome-vnc:latest"
+                        sh "docker push pardeepkaur/chrome-vnc:latest"
+                    }
+                }
+            }
+        }
+
+        stage('Debug Directory Structure') {
+            steps {
+                script {
+                    // List all files and directories to verify the structure
+                    sh 'echo "Listing current directory:"'
+                    sh 'ls -la'
+
+                    // List contents of the k8s directory specifically
+                    sh 'echo "Listing k8s directory contents:"'
+                    sh 'ls -la k8s'
+                }
+            }
+        }
+
+        stage('Apply Kubernetes Configurations') {
+            steps {
+                script {
+                    // Apply Persistent Volumes and Persistent Volume Claims from k8s directory
+                    sh 'echo "Applying Persistent Volumes..."'
+                    sh 'kubectl apply -f k8s/pv.yaml'
+                    sh 'echo "Applying Persistent Volume Claims..."'
+                    sh 'kubectl apply -f k8s/pvc.yaml'
+                    
+                    // Apply Deployments and Services from k8s directory
+                    sh 'echo "Applying Deployments..."'
+                    sh 'kubectl apply -f k8s/deployment.yaml'
+                    sh 'echo "Applying Services..."'
+                    sh 'kubectl apply -f k8s/service.yaml'
+                }
+            }
+        }
+    }
+}
