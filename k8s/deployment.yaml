@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: chrome-vnc
-        image: chrome-vnc
+        image: pardeepkaur/chrome-vnc:latest  # Full image name
         ports:
         - containerPort: 5900
         volumeMounts:
@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
       - name: chrome-vnc
-        image: chrome-vnc
+        image: pardeepkaur/chrome-vnc:latest  # Full image name
         ports:
         - containerPort: 5900
         volumeMounts:
@@ -51,4 +51,3 @@ spec:
       - name: user2-storage
         persistentVolumeClaim:
           claimName: user2-pvc
-
