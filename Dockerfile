@@ -53,4 +53,4 @@ EXPOSE 5900
 
 # Set the entry point
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-ubuntu@ip-172-31-26-229:~/cloud-browser$
+
