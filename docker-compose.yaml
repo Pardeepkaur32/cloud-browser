@@ -1,0 +1,43 @@
+services:
+  chrome-container1:
+    image: chrome-vnc
+    shm_size: '2g'
+    environment:
+      - DISPLAY=:10
+    ports:
+      - "5900:5900"
+    volumes:
+      - ./vol/user1-data:/tmp/chrome-data
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.5'
+  chrome-container2:
+    image: chrome-vnc
+    shm_size: '2g'
+    environment:
+      - DISPLAY=:10
+    ports:
+      - "5902:5900"
+    volumes:
+      - ./vol/user2-data:/tmp/chrome-data
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.5'
+  chrome-container3:
+    image: chrome-vnc
+    shm_size: '2g'
+    environment:
+      - DISPLAY=:10
+    ports:
+      - "5904:5900"
+    volumes:
+      - ./vol/user3-data:/tmp/chrome-data
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.5'
