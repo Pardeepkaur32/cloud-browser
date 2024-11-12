@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'EMPLOYEE_ID', defaultValue: '1', description: 'Employee ID for the container')
+    }
+    stages {
+        stage('Clone Repository') {
+            steps {
+                // Clone the GitHub repository
+                git url: 'https://github.com/Pardeepkaur32/cloud-browser.git', branch: 'main'
+            }
+        }
+        stage('Run start_container.sh') {
+            steps {
+                script {
+                    // Define the path to the start_container script
+                    def scriptPath = "start_conatainer.sh"  // Path is direct as it's in the root of the repo
+
+                    // Ensure the script is executable
+                    sh "chmod +x ${scriptPath}"
+
+                    // Execute the start_container.sh script with EMPLOYEE_ID parameter
+                    sh "./${scriptPath} ${params.EMPLOYEE_ID}"
+                }
+            }
+        }
+    }
+}
