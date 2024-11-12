@@ -4,11 +4,7 @@
 EMPLOYEE_ID=$1
 PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
-<<<<<<< HEAD
-USER_DATA_DIR="USER_DATA_DIR="/var/lib/jenkins/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
-=======
-USER_DATA_DIR="/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
->>>>>>> 3ec4daca3c019978b72428432326011c2d373a62
+USER_DATA_DIR="/var/lib/jenkins/cloud-browser/vol/employee${EMPLOYEE_ID}-data"  # Choose the appropriate path
 LOCK_FILE="/tmp/docker_container_lock"
 
 # Wait if another container start process is running
@@ -44,7 +40,3 @@ fi
 
 # Remove lock after starting
 rm -f "$LOCK_FILE"
-<<<<<<< HEAD
-
-=======
->>>>>>> 3ec4daca3c019978b72428432326011c2d373a62
