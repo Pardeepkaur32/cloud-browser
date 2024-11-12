@@ -1,0 +1,5 @@
+2024/11/12-16:31:06.649 3e Reusing MANIFEST /tmp/chrome-data/Default/Local Storage/leveldb/MANIFEST-000001
+2024/11/12-16:31:06.664 3e Recovering log #3
+2024/11/12-16:31:06.664 3e Level-0 table #3: started
+2024/11/12-16:31:06.672 3e Level-0 table #3: 57654 bytes OK
+2024/11/12-16:31:06.678 3e Delete type=0 #3

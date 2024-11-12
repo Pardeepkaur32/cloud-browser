@@ -1,0 +1,5 @@
+2024/11/12-16:54:19.355 3c Creating DB /tmp/chrome-data/Default/Local Storage/leveldb since it was missing.
+2024/11/12-16:54:19.502 3c Reusing MANIFEST /tmp/chrome-data/Default/Local Storage/leveldb/MANIFEST-000001
+2024/11/12-17:03:06.434 41 Level-0 table #5: started
+2024/11/12-17:03:06.442 41 Level-0 table #5: 46548 bytes OK
+2024/11/12-17:03:06.446 41 Delete type=0 #3
