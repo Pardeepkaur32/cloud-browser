@@ -4,7 +4,7 @@
 EMPLOYEE_ID=$1
 PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
-USER_DATA_DIR="/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
+USER_DATA_DIR="/var/lib/jenkins/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
 # Choose the appropriate path
 LOCK_FILE="/tmp/docker_container_lock"
 
