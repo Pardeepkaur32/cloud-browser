@@ -18,8 +18,8 @@ done
 touch "$LOCK_FILE"
 
 # Create the user data directory if it doesn’t exist
-sudo mkdir -p "$USER_DATA_DIR"
-sudo chmod 777 "$USER_DATA_DIR"  # Set permissions
+ mkdir -p "$USER_DATA_DIR"
+ chmod 777 "$USER_DATA_DIR"  # Set permissions
 
 # Check if the container is already running
 if docker ps -f name="$CONTAINER_NAME" --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
