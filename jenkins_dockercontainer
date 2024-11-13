@@ -1,28 +1,34 @@
 pipeline {
     agent any
     parameters {
-        string(name: 'EMPLOYEE_ID', defaultValue: '1', description: 'Employee ID for the container')
+        string(name: 'EMPLOYEE_ID', defaultValue: '1', description: 'Employee ID for which the container should be started')
     }
     stages {
         stage('Clone Repository') {
             steps {
-                // Clone the GitHub repository
+                // Clone the cloud-browser repository from GitHub
                 git url: 'https://github.com/Pardeepkaur32/cloud-browser.git', branch: 'main'
             }
         }
         stage('Run start_container.sh') {
             steps {
                 script {
-                    // Define the path to the start_container script
-                    def scriptPath = "start_conatainer.sh"  // Path is direct as it's in the root of the repo
+                    // Define the path to the start_container.sh script, ensuring it's correct
+                    def scriptPath = "start_container.sh"  // Ensure the script name is correctly spelled
 
-                    // Ensure the script is executable
+                    // Make the script executable
                     sh "chmod +x ${scriptPath}"
 
-                    // Execute the start_container.sh script with EMPLOYEE_ID parameter
+                    // Execute the start_container.sh script with the EMPLOYEE_ID parameter
                     sh "./${scriptPath} ${params.EMPLOYEE_ID}"
                 }
             }
+        }
+    }
+    post {
+        always {
+            // Clean up the workspace after the job to avoid any residue of previous builds
+            cleanWs()
         }
     }
 }
