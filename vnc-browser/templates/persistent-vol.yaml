@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vnc-browser-{{ .Values.employee.id }}-pv
+  labels:
+    type: local
+    employee-id: "{{ .Values.employee.id }}"
+spec:
+  capacity:
+    storage: {{ .Values.storage.size }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/ubuntu/cloud-browser/vol/employee-{{ .Values.employee.id }}"
+

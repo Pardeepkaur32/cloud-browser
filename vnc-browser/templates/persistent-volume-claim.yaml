@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vnc-browser-{{ .Values.employee.id }}-pvc
+  labels:
+    employee-id: "{{ .Values.employee.id }}"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+

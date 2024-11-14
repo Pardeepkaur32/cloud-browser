@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vnc-browser.fullname" . }}-{{ .Values.employee.id }}  # Append employee ID to service name
+  labels:
+    {{- include "vnc-browser.labels" . | nindent 4 }}
+    employee-id: "{{ .Values.employee.id }}"  # Label service with employee ID
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "vnc-browser.selectorLabels" . | nindent 4 }}
+    employee-id: "{{ .Values.employee.id }}"  # Match pods with employee ID label
+
