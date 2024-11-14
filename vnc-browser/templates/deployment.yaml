@@ -46,9 +46,19 @@ spec:
             - name: EMPLOYEE_ID
               value: "{{ .Values.employee.id }}"
           livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
+            httpGet:
+              path: /
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
           readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
+            httpGet:
+              path: /
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -87,7 +97,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: /home/ubuntu/cloud-browser/vol/employee-{{ .Values.employee.id }}  # Update path for each employee
+    path: /home/ubuntu/cloud-browser/vol/employee-{{ .Values.employee.id }}
 
 # Persistent Volume Claim Definition
 ---

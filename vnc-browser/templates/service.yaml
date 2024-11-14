@@ -6,12 +6,15 @@ metadata:
     {{- include "vnc-browser.labels" . | nindent 4 }}
     employee-id: "{{ .Values.employee.id }}"  # Label service with employee ID
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.service.type }}  # NodePort or ClusterIP as set in values.yaml
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: {{ .Values.service.port }}  # Main port for external access (e.g., 5901, 5902)
+      targetPort: {{ .Values.service.port }}  # Maps to the employee’s app port
       protocol: TCP
-      name: http
+      name: vnc-port
+      {{- if eq .Values.service.type "NodePort" }}
+      nodePort: {{ .Values.service.nodePort | default "" }}  # Optional: specify NodePort if provided in values.yaml
+      {{- end }}
   selector:
     {{- include "vnc-browser.selectorLabels" . | nindent 4 }}
     employee-id: "{{ .Values.employee.id }}"  # Match pods with employee ID label

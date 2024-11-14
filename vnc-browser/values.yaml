@@ -11,7 +11,7 @@ image:
   # This sets the pull policy for images.
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "IfNotPresent"
+  tag: "latest"
 
 employee:
   id: "default-id"     
@@ -56,10 +56,10 @@ securityContext: {}
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-  type: ClusterIP
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 80
+  type: NodePort  # Change from ClusterIP to NodePort
+  port: 5901  # Adjust based on employee.id, e.g., 5901 for user 1, 5902 for user 2
+  nodePort: 30001  # Optional: specify a static NodePort (adjust based on your requirements)
+
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
