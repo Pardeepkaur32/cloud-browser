@@ -17,7 +17,7 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {   
                         // Build, tag, and push the Docker image
-                        sh "docker build -t chrome-vnc ."
+                        sh "docker build --no-cache -t chrome-vnc ."
                         sh "docker tag chrome-vnc pardeepkaur/chrome-vnc:latest"
                         sh "docker push pardeepkaur/chrome-vnc:latest"
                     }
