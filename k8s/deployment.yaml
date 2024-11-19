@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: vnc-browser
-        image: amd64/ubuntu:vnc-browser
+        image: pardeepkaur/chrome-vnc
         ports:
         - containerPort: 5900
         volumeMounts:
