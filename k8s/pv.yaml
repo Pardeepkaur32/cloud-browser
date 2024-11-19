@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: user1-pv  # Unique name for each user's PV
+  name: user1-pv
 spec:
   capacity:
     storage: 1Gi
@@ -9,15 +9,4 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: "/home/ubuntu/cloud-browser/vol/user1-data"  # Path for user1
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: user1-pvc  # Unique name for each user's PVC
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
+    path: /home/ubuntu/cloud-browser/vol/user1-data
