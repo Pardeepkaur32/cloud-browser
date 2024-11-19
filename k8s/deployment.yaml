@@ -1,53 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vnc-browser-user1
+  name: user1-deployment
+  labels:
+    app: vnc-browser
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vnc-browser-user1
+      app: vnc-browser
   template:
     metadata:
       labels:
-        app: vnc-browser-user1
+        app: vnc-browser
     spec:
       containers:
-      - name: chrome-vnc
-        image: pardeepkaur/chrome-vnc:latest  # Full image name
+      - name: vnc-browser
+        image: pardeepkaur/chrome-vnc
         ports:
         - containerPort: 5900
         volumeMounts:
-        - mountPath: "/tmp/chrome-data"
-          name: user1-storage
+        - name: chrome-data
+          mountPath: /home/ubuntu/cloud-browser/vol/user1-data
       volumes:
-      - name: user1-storage
+      - name: chrome-data
         persistentVolumeClaim:
           claimName: user1-pvc
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: vnc-browser-user2
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: vnc-browser-user2
-  template:
-    metadata:
-      labels:
-        app: vnc-browser-user2
-    spec:
-      containers:
-      - name: chrome-vnc
-        image: pardeepkaur/chrome-vnc:latest  # Full image name
-        ports:
-        - containerPort: 5900
-        volumeMounts:
-        - mountPath: "/tmp/chrome-data"
-          name: user2-storage
-      volumes:
-      - name: user2-storage
-        persistentVolumeClaim:
-          claimName: user2-pvc
