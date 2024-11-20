@@ -4,7 +4,7 @@
 EMPLOYEE_ID=$1
 PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
-USER_DATA_DIR="$WORKSPACE/cloud-browser/vol/employee${EMPLOYEE_ID}-data"  # Use Jenkins workspace directory
+USER_DATA_DIR="/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data"  # Unique directory for each employee
 
 # Choose the appropriate path
 LOCK_FILE="/tmp/docker_container_lock"
@@ -18,9 +18,9 @@ done
 # Set a lock to prevent simultaneous container starts
 touch "$LOCK_FILE"
 
-# Create the user data directory if it doesn’t exist
+# Create the user data directory for the employee if it doesn’t exist
 mkdir -p "$USER_DATA_DIR"
-chmod 777 "$USER_DATA_DIR"  # Set permissions
+chmod 777 "$USER_DATA_DIR"  # Set permissions to allow Docker to write to it
 
 # Check if the container is already running
 if docker ps -f name="$CONTAINER_NAME" --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
@@ -30,7 +30,7 @@ else
     sleep $((RANDOM % 5 + 1))
 
     echo "Starting container $CONTAINER_NAME on port $PORT."
-    docker run -d -p $PORT:5900 -v "/home/ubuntu/cloud-browser/vol:/tmp/chrome-data" --memory="512m" --cpus="1" --shm-size="256m" \
+    docker run -d -p $PORT:5900 -v "$USER_DATA_DIR:/tmp/chrome-data" --memory="512m" --cpus="1" --shm-size="256m" \
     -e DISPLAY=:99 -e CHROME_LOG_LEVEL=DEBUG --name "$CONTAINER_NAME" chrome-vnc
 
     if [ $? -eq 0 ]; then
