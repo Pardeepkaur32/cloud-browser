@@ -3,11 +3,6 @@ pipeline {
     parameters {
         string(name: 'EMPLOYEE_ID', defaultValue: '1', description: 'Employee ID for which the container should be started')
     }
-    environment {
-        // Define reusable environment variables
-        LOCK_FILE = '/tmp/docker_container_lock'
-        SCRIPT_DIR = '/var/lib/jenkins/cloud-browser' // Base directory for user data
-    }
     stages {
         stage('Clone Repository') {
             steps {
@@ -15,68 +10,36 @@ pipeline {
                 git url: 'https://github.com/Pardeepkaur32/cloud-browser.git', branch: 'main'
             }
         }
-        stage('Start Docker Container') {
+        
+        stage('Debug Directory Structure') {
             steps {
                 script {
-                    // Define variables and script logic
-                    def employeeId = params.EMPLOYEE_ID as Integer
-                    def port = 5900 + employeeId
-                    def containerName = "vnc-browser-employee${employeeId}"
-                    def userDataDir = "${env.SCRIPT_DIR}/vol/employee${employeeId}-data"
+                    // List all files and directories to verify the structure
+                    sh 'echo "Listing current directory:"'
+                    sh 'ls -la'
+                }
+            }
+        }
 
-                    // Wait if another container start process is running
-                    while (fileExists(env.LOCK_FILE)) {
-                        echo "Another process is starting a container. Waiting..."
-                        sleep 2
-                    }
+        stage('Run start_container.sh') {
+            steps {
+                script {
+                    // Define the path to the start_container.sh script, ensuring it's correct
+                    def scriptPath = "./start_container.sh"  // Ensure the script name is correctly spelled
 
-                    // Create a lock file to prevent simultaneous starts
-                    sh "touch ${env.LOCK_FILE}"
+                    // Make the script executable
+                    sh "chmod +x ${scriptPath}"
 
-                    // Ensure the user data directory exists
-                    sh """
-                        mkdir -p ${userDataDir}
-                        chmod 777 ${userDataDir}
-                    """
-
-                    // Check if the container is already running
-                    def isContainerRunning = sh(
-                        script: "docker ps -f name=${containerName} --format '{{.Names}}' | grep -q ${containerName}",
-                        returnStatus: true
-                    ) == 0
-
-                    if (isContainerRunning) {
-                        echo "Container ${containerName} is already running."
-                    } else {
-                        // Random delay to prevent simultaneous starts
-                        sleep new Random().nextInt(5) + 1
-
-                        // Start the Docker container
-                        def runCommand = """
-                            docker run -d -p ${port}:5900 \
-                            -v ${userDataDir}:/tmp/chrome-data \
-                            --memory="512m" --cpus="1" --shm-size="256m" \
-                            -e DISPLAY=:99 -e CHROME_LOG_LEVEL=DEBUG \
-                            --name ${containerName} chrome-vnc
-                        """
-                        def runStatus = sh(script: runCommand, returnStatus: true)
-
-                        if (runStatus == 0) {
-                            echo "Container ${containerName} started successfully on port ${port}."
-                        } else {
-                            echo "Error: Failed to start container ${containerName} on port ${port}."
-                        }
-                    }
-
-                    // Remove the lock file after completion
-                    sh "rm -f ${env.LOCK_FILE}"
+                    // Execute the start_container.sh script with the EMPLOYEE_ID parameter
+                    sh "./${scriptPath} ${params.EMPLOYEE_ID}"
                 }
             }
         }
     }
+
     post {
         always {
-            // Clean up the workspace to avoid residue
+            // Clean up the workspace after the job to avoid any residue of previous builds
             cleanWs()
         }
     }
