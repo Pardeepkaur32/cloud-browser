@@ -4,7 +4,7 @@
 EMPLOYEE_ID=$1
 PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
-USER_DATA_DIR="/var/lib/jenkins/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
+USER_DATA_DIR="/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
 LOCK_FILE="/tmp/docker_container_employee_${EMPLOYEE_ID}_lock"
 
 # Wait if another process is handling the same employee's container
@@ -16,7 +16,7 @@ done
 # Create a unique lock file
 touch "$LOCK_FILE"
 
-# Ensure the user data directory exists
+# Ensure the user data directory exists in the host's /vol folder
 mkdir -p "$USER_DATA_DIR"
 chmod 777 "$USER_DATA_DIR"
 
@@ -28,8 +28,11 @@ else
     sleep $((RANDOM % 5 + 1))
 
     echo "Starting container $CONTAINER_NAME on port $PORT."
-    docker run -d -p $PORT:5900 -v "$USER_DATA_DIR:/tmp/chrome-data" --memory="512m" --cpus="1" --shm-size="256m" \
-        -e DISPLAY=:99 -e CHROME_LOG_LEVEL=DEBUG --name "$CONTAINER_NAME" chrome-vnc
+    docker run -d -p $PORT:5900 \
+        -v "$USER_DATA_DIR:/tmp/chrome-data" \  # Mount host directory to container
+        --memory="512m" --cpus="1" --shm-size="256m" \
+        -e DISPLAY=:99 -e CHROME_LOG_LEVEL=DEBUG \
+        --name "$CONTAINER_NAME" chrome-vnc
 
     if [ $? -eq 0 ]; then
         echo "Container $CONTAINER_NAME started successfully on port $PORT."
