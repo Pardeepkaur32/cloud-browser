@@ -29,7 +29,7 @@ else
 
     echo "Starting container $CONTAINER_NAME on port $PORT."
     docker run -d -p $PORT:5900 \
-        -v "$USER_DATA_DIR:/tmp/chrome-data" \  # Mount host directory to container
+        -v "$USER_DATA_DIR:/tmp/chrome-data" \ 
         --memory="512m" --cpus="1" --shm-size="256m" \
         -e DISPLAY=:99 -e CHROME_LOG_LEVEL=DEBUG \
         --name "$CONTAINER_NAME" chrome-vnc
