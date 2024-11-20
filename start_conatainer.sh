@@ -5,27 +5,26 @@ EMPLOYEE_ID=$1
 PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
 USER_DATA_DIR="/var/lib/jenkins/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
-# Choose the appropriate path
-LOCK_FILE="/tmp/docker_container_lock"
+LOCK_FILE="/tmp/docker_container_employee_${EMPLOYEE_ID}_lock"
 
-# Wait if another container start process is running
+# Wait if another process is handling the same employee's container
 while [ -e "$LOCK_FILE" ]; do
-    echo "Another process is starting a container. Waiting..."
+    echo "Another process is managing the container for Employee ${EMPLOYEE_ID}. Waiting..."
     sleep 2
 done
 
-# Set a lock to prevent simultaneous container starts
+# Create a unique lock file
 touch "$LOCK_FILE"
 
-# Create the user data directory if it doesn’t exist
- mkdir -p "$USER_DATA_DIR"
- chmod 777 "$USER_DATA_DIR"  # Set permissions
+# Ensure the user data directory exists
+mkdir -p "$USER_DATA_DIR"
+chmod 777 "$USER_DATA_DIR"
 
 # Check if the container is already running
 if docker ps -f name="$CONTAINER_NAME" --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
     echo "Container $CONTAINER_NAME is already running."
 else
-    # Random delay to prevent simultaneous starts
+    # Introduce a random delay to prevent simultaneous starts
     sleep $((RANDOM % 5 + 1))
 
     echo "Starting container $CONTAINER_NAME on port $PORT."
