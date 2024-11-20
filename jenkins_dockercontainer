@@ -25,7 +25,7 @@ pipeline {
             steps {
                 script {
                     // Define the path to the start_container.sh script, ensuring it's correct
-                    def scriptPath = "./start_container.sh"  // Ensure the script name is correctly spelled
+                    def scriptPath = "./start_conatainer.sh"  // Ensure the script name is correctly spelled
 
                     // Make the script executable
                     sh "chmod +x ${scriptPath}"
