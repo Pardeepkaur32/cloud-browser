@@ -21,6 +21,8 @@ touch "$LOCK_FILE"
 # Create the user data directory for the employee if it doesn’t exist
 mkdir -p "$USER_DATA_DIR"
 chmod 777 "$USER_DATA_DIR"  # Set permissions to allow Docker to write to it
+ls -l /home/ubuntu/cloud-browser/vol
+
 
 # Check if the container is already running
 if docker ps -f name="$CONTAINER_NAME" --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
