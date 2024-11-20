@@ -10,6 +10,32 @@ pipeline {
                 git url: 'https://github.com/Pardeepkaur32/cloud-browser.git', branch: 'main'
             }
         }
+       stage("Docker Build & Push") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {   
+                        // Build, tag, and push the Docker image
+                        sh "docker build --no-cache -t chrome-vnc ."
+                        sh "docker tag chrome-vnc pardeepkaur/chrome-vnc:latest"
+                        sh "docker push pardeepkaur/chrome-vnc:latest"
+                    }
+                }
+            }
+        }
+
+        stage('Debug Directory Structure') {
+            steps {
+                script {
+                    // List all files and directories to verify the structure
+                    sh 'echo "Listing current directory:"'
+                    sh 'ls -la'
+
+                    // List contents of the k8s directory specifically
+                    sh 'echo "Listing k8s directory contents:"'
+                    sh 'ls -la k8s'
+                }
+            }
+        }
         stage('Run start_container.sh') {
             steps {
                 script {
