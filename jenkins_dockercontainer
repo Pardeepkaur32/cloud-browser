@@ -3,72 +3,37 @@ pipeline {
     parameters {
         string(name: 'EMPLOYEE_ID', defaultValue: '1', description: 'Employee ID for which the container should be started')
     }
-   
+    
     stages {
-        stage('Clone Repository') {
+        stage('Pull Docker Image') {
             steps {
                 script {
+                    // Define the image name from Docker Hub
+                    def imageName = "pardeepkaur/chrome-vnc:latest"  // Docker Hub image name
+
                     try {
-                        echo "Cloning the cloud-browser repository from GitHub"
-                        git url: 'https://github.com/Pardeepkaur32/cloud-browser.git', branch: 'main'
-                    } catch (Exception e) {
-                        echo "Error during repository clone: ${e.message}"
-                        throw e
-                    }
-                }
-            }
-        }
+                        echo "Attempting to pull Docker image: ${imageName}"
 
-        stage('Validate Parameters') {
-            steps {
-                script {
-                    try {
-                        echo "Validating EMPLOYEE_ID parameter: ${params.EMPLOYEE_ID}"
-                        if (!params.EMPLOYEE_ID.isInteger()) {
-                            error "EMPLOYEE_ID must be an integer."
-                        } else {
-                            echo "EMPLOYEE_ID is valid: ${params.EMPLOYEE_ID}"
-                        }
-                    } catch (Exception e) {
-                        echo "Error during parameter validation: ${e.message}"
-                        throw e
-                    }
-                }
-            }
-        }
-
-        stage('Run start_container.sh') {
-            steps {
-                script {
-                    try {
-                        def scriptPath = "./start_container.sh"
-
-                        // Check if the script exists before trying to run it
-                        if (fileExists(scriptPath)) {
-                            echo "Making ${scriptPath} executable"
-                            sh "chmod +x ${scriptPath}"
-
-                            echo "Running start_container.sh with EMPLOYEE_ID: ${params.EMPLOYEE_ID}"
-                            // Execute the start_container.sh script with the EMPLOYEE_ID parameter
+                        // Log in to Docker Hub using Jenkins credentials
+                        withCredentials([usernamePassword(credentialsId: "docker", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) { 
+                            // Perform Docker login and pull the image from Docker Hub
                             sh """
-                            set -x  # Enable debugging for the shell script
-                            ./${scriptPath} ${params.EMPLOYEE_ID}
-                            set +x  # Disable debugging
+                                echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USER} --password-stdin
+                                docker pull ${imageName}
                             """
-                        } else {
-                            error "start_container.sh not found at the expected path."
                         }
+                        echo "Docker image pulled successfully from Docker Hub."
                     } catch (Exception e) {
-                        echo "Error during script execution: ${e.message}"
+                        echo "Failed to pull Docker image: ${e.message}"
                         throw e
                     }
                 }
             }
         }
     }
-
     post {
         always {
+            // Clean up the workspace after the job to avoid any residue of previous builds
             echo "Cleaning up the workspace"
             cleanWs()
         }
