@@ -3,11 +3,7 @@ pipeline {
     parameters {
         string(name: 'EMPLOYEE_ID', defaultValue: '1', description: 'Employee ID for which the container should be started')
     }
-    environment {
-        DOCKER_CREDENTIALS = 'docker'  // Jenkins credentials ID for Docker Hub login
-        LOCAL_IMAGE_NAME = 'chrome-vnc'  // Image name for local use
-        DOCKER_HUB_IMAGE_NAME = 'pardeepkaur/chrome-vnc'  // Image name for Docker Hub
-    }
+   
     stages {
         stage('Clone Repository') {
             steps {
@@ -19,69 +15,6 @@ pipeline {
                     } catch (Exception e) {
                         echo "Error during repository clone: ${e.message}"
                         throw e
-                    }
-                }
-            }
-        }
-
-        stage('Docker Build & Push') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {   
-                        try {
-                            // Build the Docker image using the local image name
-                            echo "Building Docker image using local image name..."
-                            sh "docker build --no-cache -t ${LOCAL_IMAGE_NAME} ."
-
-                            // Tag the Docker image for Docker Hub
-                            echo "Tagging Docker image for Docker Hub..."
-                            sh "docker tag ${LOCAL_IMAGE_NAME} ${DOCKER_HUB_IMAGE_NAME}:latest"
-
-                            // Push the Docker image to Docker Hub
-                            echo "Pushing Docker image to Docker Hub..."
-                            sh "docker push ${DOCKER_HUB_IMAGE_NAME}:latest"
-                            
-                            echo "Docker image built and pushed successfully."
-                        } catch (Exception e) {
-                            echo "Error during Docker build/push: ${e.message}"
-                            throw e
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Check and Pull Docker Image') {
-            steps {
-                script {
-                    // Define the image name for local use and Docker Hub
-                    def localImageName = "${LOCAL_IMAGE_NAME}"
-                    def dockerHubImageName = "${DOCKER_HUB_IMAGE_NAME}"
-
-                    try {
-                        // Check if the image is available locally
-                        def image = docker.image(localImageName)
-                        echo "Checking if Docker image ${localImageName} is available locally."
-                        image.pull()  // Pull the image if not available locally
-                        echo "Docker image is available locally or has been pulled from Docker Hub."
-                    } catch (Exception e) {
-                        echo "Docker image not found locally or failed to pull. Attempting to pull from Docker Hub..."
-
-                        // Use Docker credentials to pull the image from Docker Hub if it's not available locally
-                        withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            try {
-                                // Perform Docker login using the credentials
-                                echo "Logging into Docker Hub using credentials..."
-                                sh """
-                                    echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USER} --password-stdin
-                                    docker pull ${dockerHubImageName}
-                                """
-                                echo "Docker image pulled successfully from Docker Hub."
-                            } catch (Exception pullException) {
-                                echo "Failed to pull Docker image: ${pullException.message}"
-                                throw pullException
-                            }
-                        }
                     }
                 }
             }
