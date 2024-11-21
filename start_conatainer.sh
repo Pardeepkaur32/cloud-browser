@@ -10,8 +10,17 @@ fi
 EMPLOYEE_ID=$1
 PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
-USER_DATA_DIR="/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
+VOLUME_DIR="/home/ubuntu/cloud-browser/vol/user${EMPLOYEE_ID}"  # Volume directory for the user
 LOCK_FILE="/tmp/docker_container_employee_${EMPLOYEE_ID}_lock"
+
+# Create the volume directory if it doesn't exist
+if [ ! -d "$VOLUME_DIR" ]; then
+    echo "Creating directory for Employee ${EMPLOYEE_ID} at $VOLUME_DIR"
+    mkdir -p "$VOLUME_DIR"
+    chmod 777 "$VOLUME_DIR"
+else
+    echo "Directory for Employee ${EMPLOYEE_ID} already exists at $VOLUME_DIR"
+fi
 
 # Wait if another process is handling the same employee's container
 while [ -e "$LOCK_FILE" ]; do
@@ -21,15 +30,6 @@ done
 
 # Create a unique lock file to prevent simultaneous container starts
 touch "$LOCK_FILE"
-
-# Ensure the user data directory exists and has appropriate permissions
-if [ ! -d "$USER_DATA_DIR" ]; then
-    echo "Creating directory for Employee ${EMPLOYEE_ID} at $USER_DATA_DIR"
-    mkdir -p "$USER_DATA_DIR"
-    chmod 777 "$USER_DATA_DIR"
-else
-    echo "Directory for Employee ${EMPLOYEE_ID} already exists at $USER_DATA_DIR"
-fi
 
 # Check if the container is already running
 if docker ps -f name="$CONTAINER_NAME" --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
@@ -42,7 +42,7 @@ else
 
     # Start the Docker container with a volume mount to persist employee-specific data
     docker run -d -p $PORT:5900 \
-        -v "$USER_DATA_DIR:/tmp/chrome-data" \
+        -v "$VOLUME_DIR:/tmp/chrome-data" \  # Add volume for persistent data
         --memory="512m" \
         --cpus="1" \
         --shm-size="256m" \
