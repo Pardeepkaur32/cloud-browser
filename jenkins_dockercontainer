@@ -3,6 +3,9 @@ pipeline {
     parameters {
         string(name: 'EMPLOYEE_ID', defaultValue: '1', description: 'Employee ID for which the container should be started')
     }
+    environment {
+        DOCKER_CREDENTIALS = 'docker'  // Replace with your credentials ID in Jenkins
+    }
     stages {
         stage('Clone Repository') {
             steps {
@@ -10,11 +13,37 @@ pipeline {
                 git url: 'https://github.com/Pardeepkaur32/cloud-browser.git', branch: 'main'
             }
         }
+        stage('Check and Pull Docker Image') {
+            steps {
+                script {
+                    // Define the image name
+                    def imageName = "pardeepkaur/chrome-vnc:latest"  // Replace with the correct image name
+                    
+                    // Check if the image is available locally
+                    def image = docker.image(imageName)
+                    try {
+                        image.inside {
+                            echo "Docker image is available locally."
+                        }
+                    } catch (Exception e) {
+                        echo "Docker image not found locally. Pulling from Docker Hub..."
+
+                        // Use Docker credentials to pull the image if it's not available locally
+                        withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh """
+                                docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+                                docker pull ${imageName}
+                            """
+                        }
+                    }
+                }
+            }
+        }
         stage('Run start_container.sh') {
             steps {
                 script {
                     // Define the path to the start_container.sh script, ensuring it's correct
-                    def scriptPath = "./start_conatainer.sh"  // Ensure the script name is correctly spelled
+                    def scriptPath = "./start_container.sh"  // Ensure the script name is correctly spelled
 
                     // Make the script executable
                     sh "chmod +x ${scriptPath}"
