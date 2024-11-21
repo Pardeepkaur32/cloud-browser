@@ -5,6 +5,27 @@ pipeline {
     }
     
     stages {
+        stage('Validate Parameters') {
+            steps {
+                script {
+                    // Validate that EMPLOYEE_ID is an integer
+                    if (!params.EMPLOYEE_ID.isInteger()) {
+                        error "EMPLOYEE_ID must be an integer."
+                    }
+                }
+            }
+        }
+
+        stage('Clone GitHub Repository') {
+            steps {
+                script {
+                    // Clone the GitHub repository containing the start_container.sh script
+                    echo "Cloning GitHub repository: https://github.com/Pardeepkaur32/cloud-browser.git"
+                    sh 'git clone https://github.com/Pardeepkaur32/cloud-browser.git'
+                }
+            }
+        }
+
         stage('Pull Docker Image') {
             steps {
                 script {
@@ -17,6 +38,7 @@ pipeline {
                         // Log in to Docker Hub using Jenkins credentials
                         withCredentials([usernamePassword(credentialsId: "docker", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) { 
                             // Perform Docker login and pull the image from Docker Hub
+                            echo "Logging into Docker Hub with user: ${DOCKER_USER}"
                             sh """
                                 echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USER} --password-stdin
                                 docker pull ${imageName}
@@ -30,7 +52,34 @@ pipeline {
                 }
             }
         }
+
+        stage('Run start_container.sh') {
+            steps {
+                script {
+                    try {
+                        // Define the path to the start_container.sh script
+                        def scriptPath = "cloud-browser/start_container.sh" // Updated to point to the cloned repo
+
+                        // Check if the script exists in the cloned repo
+                        echo "Checking if script exists: ${scriptPath}"
+                        sh "ls -l ${scriptPath}"
+
+                        // Make the script executable
+                        echo "Making ${scriptPath} executable"
+                        sh "chmod +x ${scriptPath}"
+
+                        // Execute the start_container.sh script with the EMPLOYEE_ID parameter
+                        echo "Running start_container.sh with EMPLOYEE_ID: ${params.EMPLOYEE_ID}"
+                        sh "./${scriptPath} ${params.EMPLOYEE_ID}"
+                    } catch (Exception e) {
+                        echo "Error during script execution: ${e.message}"
+                        throw e
+                    }
+                }
+            }
+        }
     }
+
     post {
         always {
             // Clean up the workspace after the job to avoid any residue of previous builds
