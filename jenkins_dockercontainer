@@ -19,6 +19,15 @@ pipeline {
                 }
             }
         }
+        stage('Validate Parameters') {
+    steps {
+        script {
+            if (!params.EMPLOYEE_ID.isInteger()) {
+                error "EMPLOYEE_ID must be an integer."
+            }
+        }
+    }
+}
 
         stage('Run start_container.sh') {
             steps {
