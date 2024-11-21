@@ -53,6 +53,19 @@ pipeline {
             }
         }
 
+        stage('Add Jenkins to Docker Group') {
+            steps {
+                script {
+                    // This stage attempts to add Jenkins user to the Docker group, but it might need a restart
+                    echo "Adding Jenkins user to Docker group"
+                    sh 'sudo usermod -aG docker jenkins'
+                    sh 'sudo chown -R jenkins:jenkins /home/ubuntu/cloud-browser/vol/'
+                    sh 'sudo chmod -R 755 /home/ubuntu/cloud-browser/vol/'
+                    echo "Docker group permissions updated."
+                }
+            }
+        }
+
         stage('Run start_container.sh') {
             steps {
                 script {
