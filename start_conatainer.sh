@@ -49,7 +49,7 @@ else
         -e DISPLAY=:99 \
         -e CHROME_LOG_LEVEL=DEBUG \
         --name "$CONTAINER_NAME" \
-        chrome-vnc
+        pardeepkaur/chrome-vnc
 
     if [ $? -eq 0 ]; then
         echo "Container $CONTAINER_NAME started successfully on port $PORT."
