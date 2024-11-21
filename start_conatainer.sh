@@ -10,7 +10,7 @@ fi
 EMPLOYEE_ID=$1
 PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
-USER_DATA_DIR="/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
+# USER_DATA_DIR="/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
 LOCK_FILE="/tmp/docker_container_employee_${EMPLOYEE_ID}_lock"
 
 # Wait if another process is handling the same employee's container
@@ -42,7 +42,7 @@ else
 
     # Start the Docker container with a volume mount to persist employee-specific data
     docker run -d -p $PORT:5900 \
-        -v "$USER_DATA_DIR:/tmp/chrome-data" \
+        -v "/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data:/tmp/chrome-data" \
         --memory="512m" \
         --cpus="1" \
         --shm-size="256m" \
