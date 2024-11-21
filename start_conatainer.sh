@@ -25,8 +25,8 @@ touch "$LOCK_FILE"
 # Ensure the user data directory exists and has appropriate permissions
 if [ ! -d "$USER_DATA_DIR" ]; then
     echo "Creating directory for Employee ${EMPLOYEE_ID} at $USER_DATA_DIR"
-    mkdir -p "$USER_DATA_DIR"
-    chmod 777 "$USER_DATA_DIR"
+    sudo mkdir -p "$USER_DATA_DIR"
+    sudo chmod 777 "$USER_DATA_DIR"
 else
     echo "Directory for Employee ${EMPLOYEE_ID} already exists at $USER_DATA_DIR"
 fi
