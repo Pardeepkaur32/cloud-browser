@@ -9,7 +9,6 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Clone the cloud-browser repository from GitHub
                         echo "Cloning the cloud-browser repository from GitHub"
                         git url: 'https://github.com/Pardeepkaur32/cloud-browser.git', branch: 'main'
                     } catch (Exception e) {
@@ -19,30 +18,46 @@ pipeline {
                 }
             }
         }
+
         stage('Validate Parameters') {
-    steps {
-        script {
-            if (!params.EMPLOYEE_ID.isInteger()) {
-                error "EMPLOYEE_ID must be an integer."
+            steps {
+                script {
+                    try {
+                        echo "Validating EMPLOYEE_ID parameter: ${params.EMPLOYEE_ID}"
+                        if (!params.EMPLOYEE_ID.isInteger()) {
+                            error "EMPLOYEE_ID must be an integer."
+                        } else {
+                            echo "EMPLOYEE_ID is valid: ${params.EMPLOYEE_ID}"
+                        }
+                    } catch (Exception e) {
+                        echo "Error during parameter validation: ${e.message}"
+                        throw e
+                    }
+                }
             }
         }
-    }
-}
 
         stage('Run start_container.sh') {
             steps {
                 script {
                     try {
-                        // Define the path to the start_container.sh script
                         def scriptPath = "./start_container.sh"
 
-                        // Make the script executable
-                        echo "Making ${scriptPath} executable"
-                        sh "chmod +x ${scriptPath}"
+                        // Check if the script exists before trying to run it
+                        if (fileExists(scriptPath)) {
+                            echo "Making ${scriptPath} executable"
+                            sh "chmod +x ${scriptPath}"
 
-                        // Execute the start_container.sh script with the EMPLOYEE_ID parameter
-                        echo "Running start_container.sh with EMPLOYEE_ID: ${params.EMPLOYEE_ID}"
-                        sh "./${scriptPath} ${params.EMPLOYEE_ID}"
+                            echo "Running start_container.sh with EMPLOYEE_ID: ${params.EMPLOYEE_ID}"
+                            // Execute the start_container.sh script with the EMPLOYEE_ID parameter
+                            sh """
+                            set -x  # Enable debugging for the shell script
+                            ./${scriptPath} ${params.EMPLOYEE_ID}
+                            set +x  # Disable debugging
+                            """
+                        } else {
+                            error "start_container.sh not found at the expected path."
+                        }
                     } catch (Exception e) {
                         echo "Error during script execution: ${e.message}"
                         throw e
@@ -54,7 +69,6 @@ pipeline {
 
     post {
         always {
-            // Clean up the workspace after the job to avoid any residue of previous builds
             echo "Cleaning up the workspace"
             cleanWs()
         }
