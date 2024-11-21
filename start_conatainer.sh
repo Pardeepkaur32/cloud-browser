@@ -7,11 +7,14 @@ if [ -z "$1" ]; then
 fi
 
 # Variables
+base_data_dir="/home/ubuntu/cloud-browser/vol"
 EMPLOYEE_ID=$1
 PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
-# USER_DATA_DIR="/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
+USER_DATA_DIR="$base_data_dir/employee${EMPLOYEE_ID}-data"
+ #user_data_dir="$base_data_dir/user$i-data"
 LOCK_FILE="/tmp/docker_container_employee_${EMPLOYEE_ID}_lock"
+
 
 # Wait if another process is handling the same employee's container
 while [ -e "$LOCK_FILE" ]; do
