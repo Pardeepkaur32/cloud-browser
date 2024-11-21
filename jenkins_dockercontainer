@@ -33,7 +33,7 @@ pipeline {
                             // Perform Docker login using the credentials
                             sh """
                                 echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USER} --password-stdin
-                                docker pull ${imageName}
+                                docker pull ${pardeepkaur/chrome-vnc}
                             """
                         }
                     }
