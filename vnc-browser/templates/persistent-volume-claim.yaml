@@ -1,13 +1,33 @@
+# templates/pod.yaml
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: Pod
 metadata:
-  name: vnc-browser-{{ .Values.employee.id }}-pvc
+  name: vnc-browser-{{ .Values.employee.id }}
   labels:
+    app: vnc-browser
     employee-id: "{{ .Values.employee.id }}"
 spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.storage.size }}
-
+  containers:
+    - name: vnc-browser-container
+      image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+      ports:
+        - containerPort: 5900
+      env:
+        - name: DISPLAY
+          value: ":99"
+        - name: CHROME_LOG_LEVEL
+          value: "DEBUG"
+        - name: EMPLOYEE_ID
+          value: "{{ .Values.employee.id }}"
+      resources:
+        limits:
+          memory: "512Mi"
+          cpu: "0.5"
+      volumeMounts:
+        - mountPath: "/tmp/chrome-data"  # Path inside the container
+          name: vnc-browser-volume
+  volumes:
+    - name: vnc-browser-volume
+      persistentVolumeClaim:
+        claimName: vnc-browser-pvc-{{ .Values.employee.id }}
+  restartPolicy: Always
