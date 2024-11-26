@@ -7,50 +7,45 @@ if [ -z "$1" ]; then
 fi
 
 # Variables
+base_data_dir="/home/ubuntu/cloud-browser/vol"
 EMPLOYEE_ID=$1
-PORT=$((5900 + EMPLOYEE_ID))
+PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
-USER_DATA_DIR="/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data"
+USER_DATA_DIR="$base_data_dir/employee${EMPLOYEE_ID}-data"
+ #user_data_dir="$base_data_dir/user$i-data"
 LOCK_FILE="/tmp/docker_container_employee_${EMPLOYEE_ID}_lock"
-LOG_FILE="/var/log/docker_employee_${EMPLOYEE_ID}.log"
 
-# Redirect output to log file
-exec >> "$LOG_FILE" 2>&1
 
-# Set up trap to remove lock file
-trap 'rm -f "$LOCK_FILE"' EXIT
-
-# Concurrency management
+# Wait if another process is handling the same employee's container
 while [ -e "$LOCK_FILE" ]; do
-    echo "$(date): Another process is managing the container for Employee ${EMPLOYEE_ID}. Waiting..."
+    echo "Another process is managing the container for Employee ${EMPLOYEE_ID}. Waiting..."
     sleep 2
 done
 
-# Create lock file
+# Create a unique lock file to prevent simultaneous container starts
 touch "$LOCK_FILE"
-
-# Ensure the data directory exists
+# Ensure the user data directory exists and has appropriate permissions
 if [ ! -d "$USER_DATA_DIR" ]; then
-    echo "$(date): Creating directory for Employee ${EMPLOYEE_ID} at $USER_DATA_DIR"
-    mkdir -p "$USER_DATA_DIR"
-    chown jenkins:jenkins "$USER_DATA_DIR"
-    chmod 755 "$USER_DATA_DIR"
+    echo "Creating directory for Employee ${EMPLOYEE_ID} at $USER_DATA_DIR"
+     mkdir -p "$USER_DATA_DIR"
+     chmod 777 "$USER_DATA_DIR"
 else
-    echo "$(date): Directory for Employee ${EMPLOYEE_ID} already exists at $USER_DATA_DIR"
+    echo "Directory for Employee ${EMPLOYEE_ID} already exists at $USER_DATA_DIR"
 fi
+
 
 # Check if the container is already running
 if docker ps -f name="$CONTAINER_NAME" --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
-    echo "$(date): Container $CONTAINER_NAME is already running."
+    echo "Container $CONTAINER_NAME is already running."
 else
-    # Random delay to prevent simultaneous starts
+    # Introduce a random delay to prevent simultaneous starts
     sleep $((RANDOM % 5 + 1))
 
-    echo "$(date): Starting container $CONTAINER_NAME on port $PORT."
+    echo "Starting container $CONTAINER_NAME on port $PORT."
 
-    # Start the Docker container
+    # Start the Docker container with a volume mount to persist employee-specific data
     docker run -d -p $PORT:5900 \
-        -v "$USER_DATA_DIR:/tmp/chrome-data" \
+        -v "/home/ubuntu/cloud-browser/vol/employee${EMPLOYEE_ID}-data:/tmp/chrome-data" \
         --memory="512m" \
         --cpus="1" \
         --shm-size="256m" \
@@ -60,8 +55,11 @@ else
         pardeepkaur/chrome-vnc
 
     if [ $? -eq 0 ]; then
-        echo "$(date): Container $CONTAINER_NAME started successfully on port $PORT."
+        echo "Container $CONTAINER_NAME started successfully on port $PORT."
     else
-        echo "$(date): Error: Failed to start container $CONTAINER_NAME on port $PORT."
+        echo "Error: Failed to start container $CONTAINER_NAME on port $PORT."
     fi
 fi
+
+# Remove the lock file after completing the operation
+rm -f "$LOCK_FILE"
