@@ -62,13 +62,12 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - name: employee-data
+            - name: vnc-browser-employee-data
               mountPath: /data  # Adjust path as necessary
       volumes:
-        - name: employee-data
+        - name: vnc-browser-employee-data
           persistentVolumeClaim:
-            claimName: pvc-{{ .Values.employee.id }}
-
+            claimName: vnc-browser-{{ .Values.employee.id }}-pvc
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -81,58 +80,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-
-# Persistent Volume Definition
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: pv-{{ .Values.employee.id }}
-  labels:
-    app: vnc-browser
-    employee-id: "{{ .Values.employee.id }}"
-spec:
-  capacity:
-    storage: {{ .Values.storage.size | default "1Gi" }}
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: /home/ubuntu/cloud-browser/vol/employee-{{ .Values.employee.id }}
-
-# Persistent Volume Claim Definition
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: pvc-{{ .Values.employee.id }}
-  labels:
-    app: vnc-browser
-    employee-id: "{{ .Values.employee.id }}"
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.storage.size | default "1Gi" }}
-
-# Autoscaling configuration (when enabled)
-{{- if .Values.autoscaling.enabled }}
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: {{ include "vnc-browser.fullname" . }}-hpa
-  labels:
-    {{- include "vnc-browser.labels" . | nindent 4 }}
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: {{ include "vnc-browser.fullname" . }}-{{ .Values.employee.id }}
-  minReplicas: {{ .Values.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
-  targetCPUUtilizationPercentage: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
-  {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
-  targetMemoryUtilizationPercentage: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
-  {{- end }}
-{{- end }}
