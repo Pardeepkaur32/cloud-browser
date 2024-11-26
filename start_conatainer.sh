@@ -12,9 +12,7 @@ EMPLOYEE_ID=$1
 PORT=$((5900 + EMPLOYEE_ID))  # Unique port for each employee
 CONTAINER_NAME="vnc-browser-employee$EMPLOYEE_ID"
 USER_DATA_DIR="$base_data_dir/employee${EMPLOYEE_ID}-data"
- #user_data_dir="$base_data_dir/user$i-data"
 LOCK_FILE="/tmp/docker_container_employee_${EMPLOYEE_ID}_lock"
-
 
 # Wait if another process is handling the same employee's container
 while [ -e "$LOCK_FILE" ]; do
@@ -24,15 +22,24 @@ done
 
 # Create a unique lock file to prevent simultaneous container starts
 touch "$LOCK_FILE"
+
 # Ensure the user data directory exists and has appropriate permissions
 if [ ! -d "$USER_DATA_DIR" ]; then
     echo "Creating directory for Employee ${EMPLOYEE_ID} at $USER_DATA_DIR"
-     mkdir -p "$USER_DATA_DIR"
-     chmod 777 "$USER_DATA_DIR"
+    mkdir -p "$USER_DATA_DIR" 2>/tmp/error.log || {
+        echo "Error: Could not create $USER_DATA_DIR. Check permissions."
+        cat /tmp/error.log
+        rm -f "$LOCK_FILE"
+        exit 1
+    }
+    chmod 777 "$USER_DATA_DIR" || {
+        echo "Error: Could not set permissions on $USER_DATA_DIR."
+        rm -f "$LOCK_FILE"
+        exit 1
+    }
 else
     echo "Directory for Employee ${EMPLOYEE_ID} already exists at $USER_DATA_DIR"
 fi
-
 
 # Check if the container is already running
 if docker ps -f name="$CONTAINER_NAME" --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
@@ -63,4 +70,3 @@ fi
 
 # Remove the lock file after completing the operation
 rm -f "$LOCK_FILE"
-
