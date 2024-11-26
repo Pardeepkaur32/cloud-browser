@@ -40,8 +40,9 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.service.port | int + .Values.employee.id | int }}
               protocol: TCP
+
           env:
             - name: EMPLOYEE_ID
               value: "{{ .Values.employee.id }}"
